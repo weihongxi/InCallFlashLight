@@ -24,8 +24,6 @@ public class InCallService extends AccessibilityService {
     boolean isFlashLightOpen = false;
     int delayMillis = 100;
 
-//    private boolean isOpenInCallService;
-
     private final String ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE";
     private final String ACTION_NEW_OUTGOING_CALL = "android.intent.action.NEW_OUTGOING_CALL";
     //    private final String ACTION_WHX = "com.wind.weihongxi.inCallBroadcast";
@@ -33,19 +31,12 @@ public class InCallService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-
-//        isOpenInCallService = Utils.isAccessibilitySettingsOn(getApplicationContext());
-
-//        regReceiver();
-
         Log.d(TAG, "onAccessibilityEvent");
-
     }
 
     @Override
     public void onInterrupt() {
         Log.d(TAG, "onInterrupt");
-
     }
 
 
