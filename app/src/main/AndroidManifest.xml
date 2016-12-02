@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -17,14 +18,23 @@
         android:theme="@style/AppTheme">
 
 
-        <service android:name=".InCallService">
+        <service
+            android:name=".InCallService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/incall_service_config" />
 
         </service>
 
         <receiver android:name=".BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <!--   <action android:name="com.wind.whx.action.SERVICE_DESTROY" /> -->
                 <action android:name="com.wind.weihongxi.inCallBroadcast" />
             </intent-filter>
         </receiver>

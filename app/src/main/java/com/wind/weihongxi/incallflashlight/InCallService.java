@@ -1,5 +1,6 @@
 package com.wind.weihongxi.incallflashlight;
 
+import android.accessibilityservice.AccessibilityService;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,21 +8,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
 
 /**
  * Created by weihongxi on 2016/11/29 029.
  */
 
-public class InCallService extends Service {
+public class InCallService extends AccessibilityService {
     private static final String TAG = "whx.InCallService";
     public Camera mCamera;
     boolean isFlashLightOpen = false;
     int delayMillis = 100;
+
+//    private boolean isOpenInCallService;
 
     private final String ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE";
     private final String ACTION_NEW_OUTGOING_CALL = "android.intent.action.NEW_OUTGOING_CALL";
@@ -29,31 +32,49 @@ public class InCallService extends Service {
     private final String ACTION_DESTROY = "com.wind.whx.action.SERVICE_DESTROY";
 
     @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+
+//        isOpenInCallService = Utils.isAccessibilitySettingsOn(getApplicationContext());
+
+//        regReceiver();
+
+        Log.d(TAG, "onAccessibilityEvent");
+
+    }
+
+    @Override
+    public void onInterrupt() {
+        Log.d(TAG, "onInterrupt");
+
+    }
+
+
+    @Override
     public void onCreate() {
         super.onCreate();
 
-        Log.d(TAG, "onCreate");
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_PHONE_STATE);
         filter.addAction(ACTION_NEW_OUTGOING_CALL);
 //        filter.addAction(ACTION_WHX);
         filter.addAction(ACTION_DESTROY);
         registerReceiver(mInCallBroadcast, filter);
+        Log.d(TAG, "onCreate");
 
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind");
-        return null;
-    }
-
+    /*
+           @Override
+            public IBinder onBind(Intent intent) {
+                Log.d(TAG, "onBind");
+                return null;
+            }
+        */
     @Override
     public void onDestroy() {
         super.onDestroy();
         Intent destroy = new Intent(ACTION_DESTROY);
         sendBroadcast(destroy);
-//        unregisterReceiver(mInCallBroadcast);
         new Thread() {
             @Override
             public void run() {
@@ -81,7 +102,7 @@ public class InCallService extends Service {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
             switch (action) {
                 case ACTION_NEW_OUTGOING_CALL:
-                    openFlashLight();
+//                    openFlashLight();
                     String outCallNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
                     Log.d(TAG, "onReceive: OUT call number:" + outCallNumber);
                     break;
@@ -94,7 +115,7 @@ public class InCallService extends Service {
                     Log.d(TAG, "onReceive: else, action:" + action);
                     break;
                 default:
-                    Log.d(TAG, "onReceive: default,error");
+                    Log.e(TAG, "onReceive: default,error");
                     break;
             }
         }
@@ -144,7 +165,7 @@ public class InCallService extends Service {
 
     };
 
-    public void openFlashLight(/*boolean enable*/) {
+    public void openFlashLight() {
         if (mCamera == null) {
             mCamera = Camera.open();
             mCamera.startPreview();
@@ -156,6 +177,7 @@ public class InCallService extends Service {
             mCamera.release();
             mCamera = null;
             isFlashLightOpen = false;
+
         }
     }
 

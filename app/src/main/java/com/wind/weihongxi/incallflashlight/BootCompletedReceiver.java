@@ -11,11 +11,18 @@ import android.util.Log;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
     private final static String TAG = "whx.BootCompleted";
+    private boolean isOpenInCallService;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Intent it = new Intent(context, InCallService.class);
-        context.startService(it);
         Log.d(TAG, "onReceive: action:" + intent.getAction());
+
+        isOpenInCallService = Utils.isAccessibilitySettingsOn(context);
+        Log.d(TAG, "onReceive: isOpen:"+isOpenInCallService);
+        if (isOpenInCallService) {
+            Intent it = new Intent(context, InCallService.class);
+            context.startService(it);
+        }
     }
+
 }

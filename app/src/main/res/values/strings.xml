@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">InCallFlashLight</string>
+    <string name="accessibility_description">open flash light when InCall</string>
 </resources>
