@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.PhoneStateListener;
@@ -22,6 +25,9 @@ public class InCallService extends AccessibilityService {
     private static final String TAG = "whx.InCallService";
     public Camera mCamera;
     int delayMillis = 100;
+    private CameraManager mCameraManager;
+    private String mCameraId;
+    boolean versionM;
 
     private final String ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE";
     private final String ACTION_NEW_OUTGOING_CALL = "android.intent.action.NEW_OUTGOING_CALL";
@@ -46,6 +52,20 @@ public class InCallService extends AccessibilityService {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            versionM = false;
+        } else {
+            versionM = true;
+        }
+        if (versionM) {
+            mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            try {
+                mCameraId = mCameraManager.getCameraIdList()[0];
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_PHONE_STATE);
@@ -169,18 +189,31 @@ public class InCallService extends AccessibilityService {
     };
 
     public void openFlashLight() {
-        if (mCamera == null) {
-            mCamera = Camera.open();
-            mCamera.startPreview();
-            Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-            mCamera.setParameters(parameters);
-            Log.d(TAG, "enableFlashLight()");
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
+        try {
+            if (versionM) {
+                mCameraManager.setTorchMode(mCameraId, true);
+                mCameraManager.setTorchMode(mCameraId, false);
+                Log.d(TAG, "openFlashLight.>=M");
+            } else {
+                if (mCamera == null) {
+                    mCamera = Camera.open();
+                    mCamera.startPreview();
+                    Camera.Parameters parameters = mCamera.getParameters();
+                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                    mCamera.setParameters(parameters);
+                    Log.d(TAG, "enableFlashLight().<M");
+                    mCamera.stopPreview();
+                    mCamera.release();
+                    mCamera = null;
 
+                }
+            }
+        } catch (Exception e) {
+//            e.printStackTrace();
+            Log.e(TAG, "openFlashLight:EXCEPTION;" + Log.getStackTraceString(e));
         }
+
+
     }
 
 }
