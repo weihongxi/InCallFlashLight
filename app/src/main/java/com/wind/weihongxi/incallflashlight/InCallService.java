@@ -21,13 +21,16 @@ import android.view.accessibility.AccessibilityEvent;
 public class InCallService extends AccessibilityService {
     private static final String TAG = "whx.InCallService";
     public Camera mCamera;
-    boolean isFlashLightOpen = false;
     int delayMillis = 100;
 
     private final String ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE";
     private final String ACTION_NEW_OUTGOING_CALL = "android.intent.action.NEW_OUTGOING_CALL";
     //    private final String ACTION_WHX = "com.wind.weihongxi.inCallBroadcast";
     private final String ACTION_DESTROY = "com.wind.whx.action.SERVICE_DESTROY";
+
+    //for test
+    private final String ACTION_SHINING_FLASH_LIGHT = "com.wind.weihongxi.SHINING_FLASH_LIGHT";
+    private final String ACTION_STOP_SHINING_FLASH_LIGHT = "com.wind.weihongxi.ACTION_STOP_SHINING_FLASH_LIGHT";
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -49,6 +52,8 @@ public class InCallService extends AccessibilityService {
         filter.addAction(ACTION_NEW_OUTGOING_CALL);
 //        filter.addAction(ACTION_WHX);
         filter.addAction(ACTION_DESTROY);
+        filter.addAction(ACTION_SHINING_FLASH_LIGHT);
+        filter.addAction(ACTION_STOP_SHINING_FLASH_LIGHT);
         registerReceiver(mInCallBroadcast, filter);
         Log.d(TAG, "onCreate");
 
@@ -90,21 +95,28 @@ public class InCallService extends AccessibilityService {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d(TAG, "mInCallBroadcast.onReceive: action:" + action);
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
             switch (action) {
                 case ACTION_NEW_OUTGOING_CALL:
 //                    openFlashLight();
                     String outCallNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
-                    Log.d(TAG, "onReceive: OUT call number:" + outCallNumber);
-                    break;
-                case ACTION_DESTROY:
-                    tm.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
-                    Log.d(TAG, "onReceive: onDestroy,action:" + action);
+                    Log.d(TAG, "OUT call number:" + outCallNumber);
                     break;
                 case ACTION_PHONE_STATE:
                     tm.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-                    Log.d(TAG, "onReceive: else, action:" + action);
                     break;
+                case ACTION_DESTROY:
+                    tm.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
+                    break;
+                //for test flashlight begin
+                case ACTION_SHINING_FLASH_LIGHT:
+                    mHandler.post(open);
+                    break;
+                case ACTION_STOP_SHINING_FLASH_LIGHT:
+                    mHandler.removeCallbacks(open);
+                    break;
+                //for test end
                 default:
                     Log.e(TAG, "onReceive: default,error");
                     break;
@@ -167,7 +179,6 @@ public class InCallService extends AccessibilityService {
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
-            isFlashLightOpen = false;
 
         }
     }
