@@ -7,9 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.PhoneStateListener;
@@ -28,6 +26,7 @@ public class InCallService extends AccessibilityService {
     private CameraManager mCameraManager;
     private String mCameraId;
     boolean versionM;
+    Context mContext;
 
     private final String ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE";
     private final String ACTION_NEW_OUTGOING_CALL = "android.intent.action.NEW_OUTGOING_CALL";
@@ -52,7 +51,8 @@ public class InCallService extends AccessibilityService {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        mContext = this;
+/*
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             versionM = false;
         } else {
@@ -66,7 +66,7 @@ public class InCallService extends AccessibilityService {
                 e.printStackTrace();
             }
         }
-
+*/
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_PHONE_STATE);
         filter.addAction(ACTION_NEW_OUTGOING_CALL);
@@ -182,13 +182,14 @@ public class InCallService extends AccessibilityService {
     Runnable open = new Runnable() {
         @Override
         public void run() {
-            openFlashLight();
+//            openFlashLight();
+            FlashLight.openFlashLight(mContext);
             mHandler.postDelayed(open, delayMillis);
         }
 
     };
 
-    public void openFlashLight() {
+ /*   public void openFlashLight() {
         try {
             if (versionM) {
                 mCameraManager.setTorchMode(mCameraId, true);
@@ -214,7 +215,7 @@ public class InCallService extends AccessibilityService {
         }
 
 
-    }
+    }*/
 
 }
 
